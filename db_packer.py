@@ -18,7 +18,7 @@ if not os.path.isdir(folder):
 	print("Input directory not found.")
 	quit()
 
-targetFolder = '/tmp'
+targetFolder = '/tmp/of'
 compression = 'zstd'
 
 for a_i in range(2, len(sys.argv)):
@@ -27,7 +27,6 @@ for a_i in range(2, len(sys.argv)):
 			print("No output directory specified.  Quitting.") 
 			quit()
 		targetFolder = sys.argv[a_i + 1]
-		os.makedirs(targetFolder)
 		if not os.path.isdir(targetFolder):
 			print("Output directory could not be created.  Quitting")
 			quit()
@@ -40,14 +39,12 @@ for a_i in range(2, len(sys.argv)):
 			print("Compression method not recognized.  Quitting")
 			quit()
 
+os.makedirs(targetFolder)
+
 print(folder)
 print(targetFolder)
 print(compression)
 		 
-
-folder=sys.argv[1]
-targetFolder=sys.args[2]
-compression = sys.args[3]
 
 
 def should_skip_file(filename):
@@ -55,9 +52,9 @@ def should_skip_file(filename):
 
 dbFilePath = os.path.join(targetFolder, 'ofmanifest.db')
 
-should_create = not os.path.exists(dbFilePath)
+should_create = not os.path.isfile(dbFilePath)
 
-conn = sqlite3.connect('ofmanifest.db')
+conn = sqlite3.connect(dbFilePath)
 c = conn.cursor()
 if should_create:
 	c.execute(
@@ -97,8 +94,8 @@ for subdir, dirs, files in os.walk(folder):
 
 			#compressed = comp.compress(data) + comp.flush()
 			compressed = zstd.compress(data)
-			os.makedirs(os.path.dirname('/tmp/fortress/'+dbpath), exist_ok=True)
-			open('/tmp/fortress/'+dbpath, 'wb').write(compressed)
+			os.makedirs(os.path.dirname(os.path.join(targetFolder,dbpath)), exist_ok=True)
+			open(os.path.join(targetFolder,dbpath), 'wb').write(compressed)
 			comp_sum = hashlib.md5(compressed).hexdigest()
 			
 			c.execute('INSERT INTO files VALUES (?,?,?,?)', (dbpath, 0, new_sum, comp_sum))
@@ -108,8 +105,8 @@ for subdir, dirs, files in os.walk(folder):
 				print("Updating %s.\n" % dbpath)
 
 				compressed = zstd.compress(data)
-				os.makedirs(os.path.dirname('/tmp/fortress/'+dbpath), exist_ok=True)
-				open('/tmp/fortress/'+dbpath, 'wb').write(compressed)
+				os.makedirs(os.path.dirname(os.path.join(targetFolder,dbpath)), exist_ok=True)
+				open(os.path.join(targetFolder,dbpath), 'wb').write(compressed)
 				comp_sum = hashlib.md5(compressed).hexdigest()
 
 				c.execute('UPDATE files SET revision=revision+1 WHERE path=?', (dbpath,))
