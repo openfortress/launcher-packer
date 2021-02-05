@@ -3,6 +3,7 @@
 import sqlite3
 import sys
 import hashlib
+import shutil
 import os
 import zstd
 import lzma
@@ -39,16 +40,19 @@ for a_i in range(2, len(sys.argv)):
 			print("Compression method not recognized.  Quitting")
 			quit()
 
+if os.path.isdir(targetFolder):
+	shutil.rmtree(targetFolder)
+
 os.makedirs(targetFolder)
 
 print(folder)
 print(targetFolder)
 print(compression)
-		 
+
 
 
 def should_skip_file(filename):
-	return filename.startswith('.') or subdir[len(folder)+1::].startswith('.') or filename == 'ofmanifest.db' or filename == 'gameinfo.txt' or filename=='db_packer_fen.py' or filename == os.path.basename(__file__);
+	return filename.startswith('.') or subdir[len(folder)::].startswith('.') or filename == 'ofmanifest.db' or filename == 'gameinfo.txt' or filename=='db_packer_fen.py' or filename == os.path.basename(__file__);
 
 dbFilePath = os.path.join(targetFolder, 'ofmanifest.db')
 
@@ -72,13 +76,14 @@ skipped = []
 
 for subdir, dirs, files in os.walk(folder):
 	for filename in files:
+		print("for: " + filename)
 		if should_skip_file(filename):
 			print("Skipping %s." % filename)
 			skipped.append(filename)
 			continue
 
-		filepath = subdir + os.sep + filename
-		dbpath = filepath[len(folder)+1::]
+		filepath = os.path.join(subdir,  filename)
+		dbpath = filepath[len(folder)::]
 		print("%s:" % filepath)
 
 		c.execute('SELECT * FROM files WHERE path=?', (dbpath,) )
