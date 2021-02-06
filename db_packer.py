@@ -40,10 +40,8 @@ for a_i in range(2, len(sys.argv)):
 			print("Compression method not recognized.  Quitting")
 			quit()
 
-if os.path.isdir(targetFolder):
-	shutil.rmtree(targetFolder)
-
-os.makedirs(targetFolder)
+if not os.path.isdir(targetFolder):
+	os.makedirs(targetFolder)
 
 print(folder)
 print(targetFolder)
@@ -89,16 +87,26 @@ for subdir, dirs, files in os.walk(folder):
 		c.execute('SELECT * FROM files WHERE path=?', (dbpath,) )
 		res = c.fetchone()
 
-		data = open(filepath, 'rb').read()
+		if os.stat(filepath).st_size == 0:
+			data = bytes()
+			#new_sum = 'd41d8cd98f00b204e9800998ecf8427e'
+		else:
+			data = open(filepath, 'rb').read()
+		new_sum = hashlib.md5(data).hexdigest()
 		#comp = lzma.LZMACompressor()
 
-		new_sum = hashlib.md5(data).hexdigest()
+		
 		#print("MD5 of %s: %s" % (filepath, new_sum))
 		if res is None:
 			print("Adding %s." % dbpath)
 
 			#compressed = comp.compress(data) + comp.flush()
-			compressed = zstd.compress(data)
+			#compressed
+			if data == bytes():
+				print("This file is empty.")
+				compressed = data
+			else:
+				compressed = zstd.compress(data)
 			os.makedirs(os.path.dirname(os.path.join(targetFolder,dbpath)), exist_ok=True)
 			open(os.path.join(targetFolder,dbpath), 'wb').write(compressed)
 			comp_sum = hashlib.md5(compressed).hexdigest()
@@ -109,7 +117,12 @@ for subdir, dirs, files in os.walk(folder):
 			if old_sum != new_sum:
 				print("Updating %s.\n" % dbpath)
 
-				compressed = zstd.compress(data)
+				#compressed
+				if data == bytes():
+					compressed = data
+					print("This file is empty.")
+				else:
+					compressed = zstd.compress(data)
 				os.makedirs(os.path.dirname(os.path.join(targetFolder,dbpath)), exist_ok=True)
 				open(os.path.join(targetFolder,dbpath), 'wb').write(compressed)
 				comp_sum = hashlib.md5(compressed).hexdigest()
