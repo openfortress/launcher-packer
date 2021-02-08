@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 
 import sqlite3
 import sys
@@ -14,12 +14,29 @@ if len(sys.argv) < 2 or sys.argv[1] == None:
 	print("No input folder specified. Quitting.")
 	quit()
 
+if sys.argv[1] == "--help" or sys.argv[1] == "-h":
+	print("USAGE")
+	print("\tdb_packer.py [INPUT DIRECTORY]... [OPTIONS]...\n")
+	print("OPTIONS\n")
+	print("\tINPUT DIRECTORY is the directory where the svn repository, or other")
+	print("\trepository folder for the game files are stored.\n")
+	print("\t-o [OUTPUT FOLDER]")
+	print("\t\tDirectory where to write the compressed files and database.")
+	print("\t\tBy default this is /tmp/of\n")
+	print("\t-c [COMPRESSION METHOD]")
+	print("\t\tCompression to use, this can be zstd or lzma.  Default is zstd.\n")
+	print("\t-p [PREVIOUS OUTPUT DIRECTORY]")
+	print("\t\tDirectory that contains the previous version of the compressed")
+	print("\t\tfiles to compare against for generating file revisions.")
+	quit()
+
 folder = sys.argv[1]
 if not os.path.isdir(folder):
 	print("Input directory not found.")
 	quit()
 
 targetFolder = '/tmp/of'
+previousFolder = '/var/www/html/zstd'
 compression = 'zstd'
 
 for a_i in range(2, len(sys.argv)):
@@ -39,12 +56,26 @@ for a_i in range(2, len(sys.argv)):
 		if compression != 'zstd' and compression != 'lzma':
 			print("Compression method not recognized.  Quitting")
 			quit()
+	elif sys.argv[a_i] == "-p":
+		######### TODO #############
+		print("Not implemented yet.")
+		quit()
+		############################
+		if len(sys.argv) < a_i + 2:
+			print("No previous output directory specified.  Quitting.") 
+			quit()
+		previousFolder = sys.argv[a_i + 1]
+		if not os.path.isdir(previousFolder):
+			print("Output directory could not be created.  Quitting")
+			quit()
+	
 
 if not os.path.isdir(targetFolder):
 	os.makedirs(targetFolder)
 
 print(folder)
 print(targetFolder)
+print(previousFolder)
 print(compression)
 
 
@@ -87,26 +118,31 @@ for subdir, dirs, files in os.walk(folder):
 		c.execute('SELECT * FROM files WHERE path=?', (dbpath,) )
 		res = c.fetchone()
 
+
+		
 		if os.stat(filepath).st_size == 0:
 			data = bytes()
-			#new_sum = 'd41d8cd98f00b204e9800998ecf8427e'
 		else:
 			data = open(filepath, 'rb').read()
 		new_sum = hashlib.md5(data).hexdigest()
-		#comp = lzma.LZMACompressor()
+
+		if compression == "lzma":
+			comp = lzma.LZMACompressor()
 
 		
 		#print("MD5 of %s: %s" % (filepath, new_sum))
 		if res is None:
 			print("Adding %s." % dbpath)
 
-			#compressed = comp.compress(data) + comp.flush()
-			#compressed
-			if data == bytes():
-				print("This file is empty.")
-				compressed = data
-			else:
-				compressed = zstd.compress(data)
+			if compression == "lzma":
+				compressed = comp.compress(data) + comp.flush()
+			elif compression == "zstd":
+				if data == bytes():
+					print("This file is empty.")
+					compressed = data
+				else:
+					compressed = zstd.compress(data)
+			
 			os.makedirs(os.path.dirname(os.path.join(targetFolder,dbpath)), exist_ok=True)
 			open(os.path.join(targetFolder,dbpath), 'wb').write(compressed)
 			comp_sum = hashlib.md5(compressed).hexdigest()
@@ -117,12 +153,15 @@ for subdir, dirs, files in os.walk(folder):
 			if old_sum != new_sum:
 				print("Updating %s.\n" % dbpath)
 
-				#compressed
-				if data == bytes():
-					compressed = data
-					print("This file is empty.")
-				else:
-					compressed = zstd.compress(data)
+				if compression == "lzma":
+					compressed = comp.compress(data) + comp.flush()
+				elif compression == "zstd":
+					if data == bytes():
+						print("This file is empty.")
+						compressed = data
+					else:
+						compressed = zstd.compress(data)
+				
 				os.makedirs(os.path.dirname(os.path.join(targetFolder,dbpath)), exist_ok=True)
 				open(os.path.join(targetFolder,dbpath), 'wb').write(compressed)
 				comp_sum = hashlib.md5(compressed).hexdigest()
