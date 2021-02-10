@@ -57,10 +57,6 @@ for a_i in range(2, len(sys.argv)):
 			print("Compression method not recognized.  Quitting")
 			quit()
 	elif sys.argv[a_i] == "-p":
-		######### TODO #############
-		print("Not implemented yet.")
-		quit()
-		############################
 		if len(sys.argv) < a_i + 2:
 			print("No previous output directory specified.  Quitting.") 
 			quit()
