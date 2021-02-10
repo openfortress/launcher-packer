@@ -83,9 +83,14 @@ print(compression)
 def should_skip_file(filename):
 	return filename.startswith('.') or subdir[len(folder)::].startswith('.') or filename == 'ofmanifest.db' or filename == 'gameinfo.txt' or filename=='db_packer_fen.py' or filename == os.path.basename(__file__);
 
-dbFilePath = os.path.join(targetFolder, 'ofmanifest.db')
+#dbFilePath = os.path.join(targetFolder, 'ofmanifest.db')
+dbFilePath = os.path.join(previousFolder, 'ofmanifest.db')
 
 should_create = not os.path.isfile(dbFilePath)
+if not should_create:
+	dbFilePathL = os.path.join(targetFolder, 'ofmanifest.db')
+	shutil.copy(dbFilePath, dbFilePathL)
+	dbFilePath = dbFilePathL
 
 conn = sqlite3.connect(dbFilePath)
 c = conn.cursor()
