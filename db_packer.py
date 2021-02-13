@@ -62,12 +62,12 @@ for a_i in range(2, len(sys.argv)):
 			quit()
 		previousFolder = sys.argv[a_i + 1]
 		if not os.path.isdir(previousFolder):
-			print("Output directory could not be created.  Quitting")
+			print("Previous directory not found.  Quitting")
 			quit()
 	
 
-if not os.path.isdir(targetFolder):
-	os.makedirs(targetFolder)
+shutil.rmtree(targetFolder)
+os.makedirs(targetFolder)
 
 print(folder)
 print(targetFolder)
@@ -83,11 +83,13 @@ def should_skip_file(filename):
 dbFilePath = os.path.join(previousFolder, 'ofmanifest.db')
 
 should_create = not os.path.isfile(dbFilePath)
+dbFilePathL = os.path.join(targetFolder, 'ofmanifest.db')
 if not should_create:
-	dbFilePathL = os.path.join(targetFolder, 'ofmanifest.db')
 	shutil.copy(dbFilePath, dbFilePathL)
-	dbFilePath = dbFilePathL
+	
+dbFilePath = dbFilePathL
 
+print(dbFilePath)
 conn = sqlite3.connect(dbFilePath)
 c = conn.cursor()
 if should_create:
@@ -172,10 +174,13 @@ for subdir, dirs, files in os.walk(folder):
 				c.execute('UPDATE files SET checksumlzma=? WHERE path=?', (comp_sum, dbpath))
 			else:
 				print("%s has not changed\n" % dbpath)
+				os.makedirs(os.path.dirname(os.path.join(targetFolder,dbpath)), exist_ok=True)
+				shutil.copy(os.path.join(previousFolder,dbpath), os.path.join(targetFolder,dbpath))
+
 
 c.execute('SELECT * FROM files')
 for row in c.fetchall():
-	if not os.path.exists(folder + os.sep + row[0]) or row[0][1::] in skipped:
+	if not os.path.exists(os.path.join(folder, row[0])) or row[0][1::] in skipped:
 		print("Deleting %s." % row[0])
 		c.execute('DELETE FROM files WHERE path=?', (row[0],))
 

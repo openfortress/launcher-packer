@@ -1,0 +1,23 @@
+{
+  "name": "launcher-packer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fenteale/launcher-packer.git"
+  },
+  "author": "Fenteale",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Fenteale/launcher-packer/issues"
+  },
+  "homepage": "https://github.com/Fenteale/launcher-packer#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "fs-extra": "^9.1.0"
+  }
+}
