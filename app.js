@@ -13,6 +13,7 @@ const svnPath = '/home/fenteale/Projects/ofpl/open_fortress/';
 const prevPath = '/home/fenteale/Projects/ofpl/test/';
 
 var startMsg = null;
+var inProg = false;
 
 client.once('ready', () => {
 	console.log('Logged in.');
@@ -24,6 +25,11 @@ client.on('message', async (msg) => {
 			msg.reply('Only developers can push updates.');
 			return;
 		}
+		if(inProg) {
+			msg.channel.send('The process has already started.  Please wait until that is finished.');
+			return;
+		}
+		inProg = true;
 		msg.channel.startTyping();
 		msg.channel.send('Pushing updates from SVN to launcher repo for public.\n\nWorking!  This will take a while, please be patient.', {files: ["./dig.gif"]}).then(s => {
 			startMsg = s;
@@ -46,6 +52,7 @@ client.on('message', async (msg) => {
 			if(code != 0) {
 				console.log(signal);
 				msg.channel.send('Ruh roh, there was an error executing the script.  Ask Fenteale to help.');
+				inProg = false;
 				return;
 			}
 			console.log('SVN update success!  Continuing with launcher script.');
@@ -75,6 +82,7 @@ client.on('message', async (msg) => {
 				if(code != 0) {
 					console.log(signal);
 					msg.channel.send('Ruh roh, there was an error executing the script.  Ask Fenteale to help.');
+					inProg = false;
 					return;
 				}
 
@@ -87,6 +95,7 @@ client.on('message', async (msg) => {
 				console.log('Everything is done!');
 
 				msg.channel.send('Update is pushed to the launcher repo!');
+				inProg = false;
 			});
 		});
 

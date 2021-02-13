@@ -65,8 +65,8 @@ for a_i in range(2, len(sys.argv)):
 			print("Previous directory not found.  Quitting")
 			quit()
 	
-
-shutil.rmtree(targetFolder)
+if(os.path.isdir(targetFolder)):
+	shutil.rmtree(targetFolder)
 os.makedirs(targetFolder)
 
 print(folder)
