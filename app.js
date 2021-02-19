@@ -6,11 +6,12 @@ const fs = require('fs-extra');
 
 const spawn = require("child_process").spawn;
 
-const developerSnowflake = '783560656783278090'; //for testing only
-//const developerSnowflake = '545127775900532741'; //real OF one
+const config = require("./config.json");
 
-const svnPath = '/home/fenteale/Projects/ofpl/open_fortress/';
-const prevPath = '/home/fenteale/Projects/ofpl/test/';
+const developerSnowflake = config.developerSnowflake;
+
+const svnPath = config.svnPath;
+const prevPath = config.prevPath;
 
 var startMsg = null;
 var inProg = false;
@@ -102,5 +103,5 @@ client.on('message', async (msg) => {
 	}
 })
 
-client.login(fs.readFileSync(path.join(__dirname, "token.txt"), {encoding:'utf8', flag:'r'} ).trim());
+client.login(config.discordToken);
 
