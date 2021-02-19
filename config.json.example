@@ -1,0 +1,6 @@
+{
+    "discordToken": "reallylongdiscordbottoken",
+    "developerSnowflake" : "roleidofrolethatcanuse",
+    "svnPath" : "/path/where/svn/repo/is/ending/with/a/slash/",
+    "prevPath" : "/path/where/files/are/hosted/ending/with/slash/"
+}
