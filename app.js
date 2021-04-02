@@ -59,7 +59,7 @@ client.on('message', async (msg) => {
 			console.log('SVN update success!  Continuing with launcher script.');
 
 			
-			const lpScript = spawn('python3', ['./db_packer.py', svnPath, '-p', prevPath]);
+			const lpScript = spawn('python3', ['./db_packer.py', svnPath, '-p', prevPath, '-k', config.keyPath]);
 
 			lpScript.stdout.on('data', (data) => {
 				console.log(data.toString());
