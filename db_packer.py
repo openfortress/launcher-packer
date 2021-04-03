@@ -19,7 +19,7 @@ if len(sys.argv) < 2 or sys.argv[1] == None:
 
 if sys.argv[1] == "--help" or sys.argv[1] == "-h":
     print("USAGE")
-    print("\tdb_packer.py [INPUT DIRECTORY] [KEY]... [OPTIONS]...\n")
+    print("\tdb_packer.py [INPUT DIRECTORY] -k [KEY]... [OPTIONS]...\n")
     print("OPTIONS\n")
     print("\tINPUT DIRECTORY is the directory where the svn repository, or other")
     print("\trepository folder for the game files are stored.\n")
@@ -120,6 +120,10 @@ if should_create:
             signature text
         )
         """)
+else:
+    x = [col[1] for col in c.execute('PRAGMA table_info(files)')]
+    if "signature" not in x:
+        c.execute("ALTER TABLE files ADD COLUMN signature;")
 skipped = []
 
 for subdir, dirs, files in os.walk(folder):
