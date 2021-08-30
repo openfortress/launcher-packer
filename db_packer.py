@@ -8,7 +8,7 @@ import zstd
 import lzma
 from Crypto.Hash import SHA384
 from Crypto.PublicKey import RSA
-from Crypto.Signature import pkcs1_15
+from Crypto.Signature import pss
 
 # args
 folder = ""
@@ -165,7 +165,7 @@ for subdir, dirs, files in os.walk(folder):
             comp_sum = SHA384.new(compressed).hexdigest()
             if ".dll" in dbpath or ".so" in dbpath or ".cfg" in dbpath:
                 print("Signing...")
-                signature = pkcs1_15.new(key).sign(sign_sum)
+                signature = pss.new(key).sign(sign_sum)
             else:
                 signature = None
             c.execute('INSERT INTO files VALUES (?,?,?,?,?)', (dbpath, 0, new_sum, comp_sum,signature))
@@ -185,7 +185,7 @@ for subdir, dirs, files in os.walk(folder):
                 comp_sum = SHA384.new(compressed).hexdigest()
                 if ".dll" in dbpath or ".so" in dbpath or ".cfg" in dbpath:
                     print("Updating signature...")
-                    signature = pkcs1_15.new(key).sign(sign_sum)
+                    signature = pss.new(key).sign(sign_sum)
                 else:
                     signature = None
                 c.execute('UPDATE files SET revision=revision+1 WHERE path=?', (dbpath,))
@@ -207,7 +207,7 @@ conn.commit()
 conn.close()
 db = open(targetFolder+"/ofmanifest.db",'rb')
 dbr = db.read()
-dbsum = pkcs1_15.new(key).sign(SHA384.new(dbr))
+dbsum = pss.new(key).sign(SHA384.new(dbr))
 db.close()
 ds = open(targetFolder+"/ofmanifest.sig",'wb')
 ds.write(dbsum)
